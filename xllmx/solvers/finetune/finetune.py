@@ -85,9 +85,8 @@ class FinetuneSolverBase(ABC):
             Path(args.output_dir).mkdir(parents=True, exist_ok=True)
         dist.barrier()
 
-        if args.precision == "tf32":
-            torch.backends.cuda.matmul.allow_tf32 = True
-            torch.backends.cudnn.allow_tf32 = True
+        from livemgt_training.precision import configure
+        configure(args.precision == "tf32")
 
         self.logger.info("work dir: {}".format(os.path.dirname(os.path.realpath(__file__))))
         self.logger.info("{}".format(self.args).replace(", ", ",\n"))
@@ -97,6 +96,7 @@ class FinetuneSolverBase(ABC):
             "fp16": torch.float16,
             "bf16": torch.bfloat16,
             "tf32": torch.float32,
+            "fp32": torch.float32,
         }[self.args.precision]
 
         # =======================================================
@@ -203,7 +203,7 @@ class FinetuneSolverBase(ABC):
         # Parallel
         parser.add_argument("--model_parallel_size", type=int, default=1)
         parser.add_argument("--data_parallel", type=str, choices=["sdp", "fsdp"], default="sdp")
-        parser.add_argument("--precision", type=str, choices=["fp16", "bf16", "tf32"], default="bf16")
+        parser.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16", "tf32"], default="fp32")
         parser.add_argument("--grad_precision", choices=["fp32", "fp16", "bf16"], default="fp32")
 
         # Checkpointing

@@ -150,7 +150,7 @@ def encode_img_with_breaks(img, vqvae, vae_scale_factor: int = 16):
     orig = img.convert("RGB")
     orig_resized = orig
     image_processor = VaeImageProcessor(vae_scale_factor=vae_scale_factor, do_normalize=False)
-    x = image_processor.preprocess(orig_resized).to(vqvae.device)
+    x = image_processor.preprocess(orig_resized).to(device=vqvae.device,dtype=vqvae.dtype)
     latents = vqvae.encode(x).latents
     latents_bsz, channels, lat_h, lat_w = latents.shape
     quantized = vqvae.quantize(latents)[2][2] + 126356

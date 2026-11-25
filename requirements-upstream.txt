@@ -1,0 +1,7 @@
+# Optional original Lumina multimodal train/train.py and xllmx/ support.
+-r requirements.txt
+pandas
+tensorboard
+fairscale
+h5py
+Ninja

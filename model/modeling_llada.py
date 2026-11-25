@@ -653,7 +653,7 @@ class LLaDABlock(nn.Module):
         Computes scaled dot product attention on query, key and value tensors, using an optional
         attention mask if passed, and applying dropout if a probability greater than 0.0 is specified.
         """
-        if self.flash_attn_func is not None and attn_mask is None:
+        if self.flash_attn_func is not None and attn_mask is None and q.dtype in (torch.float16, torch.bfloat16):
             r = self.flash_attn_func(
                 q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2), dropout_p=dropout_p, causal=False
             )
@@ -668,14 +668,14 @@ class LLaDABlock(nn.Module):
                 k = k.repeat_interleave(num_q_heads // num_kv_heads, dim=1, output_size=num_q_heads)
                 v = v.repeat_interleave(num_q_heads // num_kv_heads, dim=1, output_size=num_q_heads)
 
-            # Modify: MDM set causal to False, and with no attn_mask.
+            # MDM is bidirectional by default; explicit masks must reach SDPA.
             return F.scaled_dot_product_attention(
                 q,
                 k,
                 v,
-                attn_mask=None,
+                attn_mask=attn_mask,
                 dropout_p=dropout_p,
-                is_causal=False,
+                is_causal=is_causal,
             )
 
     def attention(
@@ -732,7 +732,7 @@ class LLaDABlock(nn.Module):
             q,
             k,
             v,
-            attn_mask=None,
+            attn_mask=attention_bias,
             dropout_p=0.0 if not self.training else self.config.attention_dropout,
             is_causal=False,
         )
@@ -911,7 +911,11 @@ class LLaDALlamaBlock(LLaDABlock):
         use_cache: bool = False,
         cat = 'cond',
         to_compute_mask = None,
+        live_context = None,
     ) -> Tuple[torch.Tensor, Optional[Tuple[torch.Tensor, torch.Tensor]]]:
+        if live_context is not None:
+            from .livemgt import prefix_block
+            return prefix_block(self, x, *live_context), None
         # Get query, key, value projections.
         # shape:
         #  - for regular attn q, k, v: (batch_size, seq_len, d_model)
@@ -1304,8 +1308,9 @@ class LLaDAModel(nn.Module):
             elif attention_bias is None:
                 attention_bias = get_causal_attention_bias(self.__cache, past_length + seq_len, x.device)
             elif attention_bias.dtype in (torch.int8, torch.bool):
-                attention_bias = attention_bias.to(dtype=torch.float)
-                attention_bias.masked_fill_(attention_bias == 0.0, torch.finfo(attention_bias.dtype).min)
+                allowed = attention_bias.bool()
+                attention_bias = torch.zeros_like(allowed, dtype=torch.float)
+                attention_bias.masked_fill_(~allowed, float("-inf"))
 
             # Transform to the right shape and data type.
             mask_len = seq_len
@@ -1313,6 +1318,8 @@ class LLaDAModel(nn.Module):
                 mask_len = attention_mask.shape[-1]
             elif past_key_values is not None:
                 mask_len = past_key_values[0][0].shape[-2] + seq_len
+            if attention_bias.ndim == 2:
+                attention_bias = attention_bias[None, None]
             attention_bias = attention_bias[:, :, :mask_len, :mask_len].to(dtype=torch.float)
 
             # Add in the masking bias.

@@ -49,7 +49,10 @@ def init_ceph_client_if_needed():
         st = time.time()
         from petrel_client.client import Client  # noqa
 
-        client = Client("/mnt/petrelfs/xinyi/petreloss.conf")
+        config = os.environ.get("PETREL_CONFIG")
+        if not config:
+            raise ValueError("Set PETREL_CONFIG to your Petrel client configuration file")
+        client = Client(os.path.expanduser(config))
         ed = time.time()
         logger.info(f"initialize client cost {ed - st:.2f} s")
 

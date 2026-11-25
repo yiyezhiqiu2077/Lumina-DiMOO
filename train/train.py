@@ -168,7 +168,7 @@ class Solver(FinetuneSolverBase):
     ) -> (LLaDAForMultiModalGeneration, None):
         # Final SFT
         tokenizer = AutoTokenizer.from_pretrained(init_from, trust_remote_code=True)
-        model = LLaDAForMultiModalGeneration.from_pretrained(init_from, torch_dtype=torch.bfloat16, device_map="cpu")
+        model = LLaDAForMultiModalGeneration.from_pretrained(init_from, torch_dtype=torch.float32, device_map="cpu")
         model.model.set_activation_checkpointing("whole_layer")
         return model, tokenizer
 

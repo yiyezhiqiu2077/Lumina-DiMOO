@@ -21,11 +21,36 @@ def create_attention_mask(original_lengths, max_tokens, device):
 class LLaDAForMultiModalGeneration(LLaDAModelLM):
     config_class = LLaDAConfig
     base_model_prefix = "model"
+    _keep_in_fp32_modules = ["live_type_rope"]
     def __init__(self, config: LLaDAConfig, *args, **kwargs):
-        print(f"Initializing MMadaModelLM with config: {config}")
         super().__init__(config, *args, **kwargs)
+        if getattr(config, 'live_mgt_conditioning', None):
+            from .livemgt_conditioning import enable_conditioning
+            enable_conditioning(self, **config.live_mgt_conditioning)
+        if getattr(config,'live_mgt_rope',None):
+            from .livemgt_rope import enable_type_rope
+            enable_type_rope(self,**config.live_mgt_rope)
     
+    def _init_weights(self, module):
+        super()._init_weights(module)
+        from .livemgt_rope import TokenTypeRotary
+        if isinstance(module,TokenTypeRotary):
+            torch.nn.init.zeros_(module.phase)
+
+    @classmethod
+    def from_pretrained(cls,*args,**kwargs):
+        requested=kwargs.pop('output_loading_info',False)
+        model,info=super().from_pretrained(*args,output_loading_info=True,**kwargs)
+        if any('live_type_rope.' in name for name in info['unexpected_keys']):
+            raise ValueError('trained rotary parameters present without matching model config; refusing to discard')
+        return (model,info) if requested else model
+
     def forward(self, input_ids=None, labels=None, infer=False, use_cache=False, to_compute_mask=None, cat='', **kwargs):
+        live_layout = kwargs.pop("live_layout", None)
+        if live_layout is not None:
+            from .livemgt import forward_prefix
+            return forward_prefix(self, input_ids, live_layout, **kwargs)
+        explicit_bias = kwargs.pop("attention_bias", None)
         if infer:
             input_ids = input_ids.tolist()
         # ========================================================
@@ -37,7 +62,19 @@ class LLaDAForMultiModalGeneration(LLaDAModelLM):
         input_ids = torch.tensor(input_ids, dtype=torch.int64, device=self.device) 
         # attn mask
         attention_mask = create_attention_mask(original_lengths, max_tokens, self.device)
-        attention_bias = (attention_mask[:, :, None] & attention_mask[:, None, :]).bool().unsqueeze(1)
+        # Equal-length inputs have no padding: retain the original mask-free
+        # bidirectional fast path. Explicit isolation masks still reach SDPA.
+        attention_bias = None
+        if min(original_lengths) != max_tokens:
+            attention_bias = (attention_mask[:, :, None] & attention_mask[:, None, :]).unsqueeze(1)
+        if explicit_bias is not None:
+            if attention_bias is None:
+                attention_bias = explicit_bias
+            elif explicit_bias.dtype == torch.bool:
+                attention_bias = attention_bias & explicit_bias
+            else:
+                attention_bias = torch.zeros_like(attention_bias, dtype=explicit_bias.dtype).masked_fill(
+                    ~attention_bias, float('-inf')) + explicit_bias
         # ========================================================
         # model output 
         # ========================================================

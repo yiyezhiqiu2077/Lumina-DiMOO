@@ -1,392 +1,223 @@
-<p align="center">
- <img src="./assets/Lumina-DiMOO.png" width="20%"/>
-</p>
+# Lumina-DiMOO × LiveMGT
 
-<div align="center">
- <h1> Lumina-DiMOO: An Omni Diffusion Large Language Model for Multi-Modal Generation and Understanding </h1>
+## Introduction
 
-  [[📑 Technical Report ](http://arxiv.org/abs/2510.06308)] &emsp; [[🌐 Project Page (Demo & Benchmark)](https://synbol.github.io/Lumina-DiMOO/)] &emsp; [[🤗 Model ](https://huggingface.co/Alpha-VLLM/Lumina-DiMOO)]
- 
- <b>¹Shanghai Innovation Institute, ²Shanghai AI Laboratory, ³Shanghai Jiao Tong University, ⁴Nanjing University </b>
- 
- <b>⁵The University of Sydney, ⁶The Chinese University of Hong Kong, ⁷Tsinghua University</b>
+This project adapts LiveMGT image editing to Lumina-DiMOO 8B. Sparse Target
+Modeling processes editable target tokens alongside a complete text/reference
+prefix, using Prefix Attention throughout sampling. Condition KV Cache reuses
+prefix keys and values between inference steps. Region-size Conditioning and
+pretrained-compatible Token-Type RoPE (C) provide region and token-role signals
+while retaining Lumina's absolute positions. Region-DiMO trains a one-step editor
+with CBC weighting, regional distillation, GT cross-entropy and an auxiliary model.
 
- <img src="./assets/teaser.png" width="95%"/>
-</div>
+## Installation
 
-## 📚 Introduction 
-We introduce Lumina-DiMOO, an omni foundational model for seamless multimodal generation and understanding. Lumina-DiMOO is distinguished by four key innovations:
+Use Python 3.10+ and PyTorch 2.5.1. Install the PyTorch wheel appropriate for your
+CUDA environment, then the project dependencies:
 
- - **Unified Discrete Diffusion Architecture:** Lumina-DiMOO sets itself apart from prior unified models by utilizing a fully discrete diffusion modeling to handle inputs and outputs across various modalities.
- - **Versatile Multimodal Capabilities:** Lumina-DiMOO supports a broad spectrum of multimodal tasks, including text-to-image generation (allowing for arbitrary and high-resolution), image-to-image generation (e.g., image editing, subject-driven generation, and image inpainting, etc.), alongside advanced image understanding.
-
- - **Higher Sampling Efficiency:** Compared to previous AR or hybrid AR-diffusion paradigms, Lumina-DiMOO demonstrates remarkable sampling efficiency. Additionally, we design a bespoke caching method to further speed up the sampling speed by 2x.
-
- - **Superior Performance:** Lumina-DiMOO achieves state-of-the-art performance on multiple benchmarks, surpassing existing open-source unified multimodal models, setting a new standard in the field.
-
-
-   
- <img src="./assets/architecture.png" width="100%"/>
-
-
-## 🔥 News
-- **[2026-05-16]** We have released our paper **HT-GRPO**. See more details at [ArXiv (HT-GRPO)](https://arxiv.org/abs/2605.16842).
-- **[2026-02-26]** 🎉 Our dMLLM-TTS is accepted by CVPR 2026.
-- **[2025-12-23]** We have designed a unique Test-Time Scaling algorithm for Diffusion MLLM. See more details at [ArXiv (dMLLM-TTS)](https://arxiv.org/abs/2512.19433).
-- **[2025-11-27]** We have released the evaluation code using VLMEvalKit.
-- **[2025-10-24]** 🎉 We have released a guide for those who want to build worlds with the mask paradigm, see more details at [ArXiv](https://arxiv.org/abs/2510.20668) and [Github](https://github.com/M-E-AGI-Lab/Awesome-World-Models).
-- **[2025-10-21]** 🎉 We’ve added support for [Diffusers](https://github.com/qianyu-dlut/diffusers/blob/main/Lumina_DiMOO_README.md) and [ComfyUI](https://github.com/L-Hugh/ComfyUI-Lumina-DiMOO).
-- **[2025-10-06]** Training code is released.
-- **[2025-09-25]** We have released the Technical Report.
-- **[2025-09-20]** 🎉 In the latest [UniGenBench Leaderboard](https://huggingface.co/spaces/CodeGoat24/UniGenBench_Leaderboard)(maintained by Tencent Hunyuan Team), Lumina-DiMOO's generation evaluation ranks 1st 🥇 among all open-source unified models. 
-- **[2025-09-12]** We have open-sourced Image Inpainting & Extrapolation code.
-- **[2025-09-11]** We have open-sourced the Max Logit-based Cache solution, offering a 2x speed improvement for sampling.
-- **[2025-09-10]** 🎉 We release the initial version of **Lumina-DiMOO**, including:
-  - 🎯 Model Checkpoints on [HuggingFace](https://huggingface.co/Alpha-VLLM/Lumina-DiMOO)!
-  - 🎯 Text-to-Image & Image-to-Image Generation Inference code!
-  - 🎯 Image Understanding Inference Code!
-  - 🎯 Website & Demo on [Project Page](https://synbol.github.io/Lumina-DiMOO/)!
-
-## 📝 Open-Source Plan
- - [x] Image Inpainting & Extrapolation Code
- - [x] Fast Sampling with Max Logit-based Cache
- - [x] Diffusers and ComfyUI
- - [x] Bechmark Evaluation Code
- - [x] Fine-Tuning Code
- - [x] Technical Report
- - [ ] Test-Time Scaling
-
-## 📽️ Qualitative Results
-Here we present some comparative generation results with other models. **For additional visualization results, please see our [Project Page](https://synbol.github.io/Lumina-DiMOO/).**
-<details open>
-  <summary>Text-to-Image Comparison</summary>
-  <img src="./assets/demo_t2i.png" width="100%"/>
-<!--   <details open>
-  <summary>Effects of Max Logit-Based Cache (A800 GPU, 1536x768 resolution)</summary>
-  Without Cache: Latency: 58.2 s; Peak GPU Memory: 38.9 GiB
-  <img src="./assets/nocache.png" width="80%"/>
-
-
-  With Cache: Latency: 32.2 s; Peak GPU Memory: 45.9 GiB
-  <img src="./assets/cache.png" width="80%"/>
-</details> -->
-</details>
-
-<details close>
-  <summary>Image Editing Comparison</summary>
-  <img src="./assets/demo_editing.png" width="100%"/>
-</details>
-
-<details close>
-  <summary>Controllable & Subject-Driven Generation Comparison</summary>
-  <img src="./assets/qualitative_control_subject.png" width="100%"/>
-</details>
-
-<details close>
-  <summary>Image Inpainting & Extrapolation</summary>
-  <img src="./assets/demo_inpainting.jpg" width="100%"/>
-</details>
-
-
-## 📊 Quantitative Performance
-<details open>
-  <summary>GenEval Benchmark</summary>
-  <img src="./assets/GenEval_benchmark.png" width="100%"/>
-</details>
-
-
-<details close>
-  <summary>DPG Benchmark</summary>
-  <img src="./assets/DPG_benchmark.png" width="100%"/>
-</details>
-
-<details close>
-  <summary>OneIG-EN Benchmark</summary>
-  <img src="./assets/OneIG-EN_benchmark.png" width="100%"/>
-</details>
-
-
-<details close>
-  <summary>TIIF Benchmark</summary>
-  <img src="./assets/TIIF_benchmark.png" width="100%"/>
-</details>
-
-<details close>
-  <summary>Image-to-Image Benchmark</summary>
-  <img src="./assets/i2i_benchmark.png" width="100%"/>
-</details>
-
-<details close>
-  <summary>Image Understanding Benchmark</summary>
-  <img src="./assets/understanding_benchmark.png" width="100%"/>
-</details>
-
-## 🚀 Sampling Speed Analysis
-- Since text generation is performed in a block-wise manner, unlike image generation which uses a single global decoding step, its speed is influenced by both the number of blocks and the number of steps. Therefore, the speed improvement of image understanding is not as significant as that of image generation.
-
-- **Lumina-DiMOO Settings**: For image generation, we sample 64 steps. For image understanding, we set the block length to 256 and the number of sampling steps to 128.
-
-<img src="./assets/speed_comparison.png" width="100%"/>
-
-
-## 📌 Quick Start
-### ⚙️ Installation
-#### 1. Create a conda environment
-```
-git clone https://github.com/Alpha-VLLM/Lumina-DiMOO.git && cd Lumina-DiMOO
-conda create -n lumina_dimoo python=3.10 -y
-conda activate lumina_dimoo
-```
-#### 2. Install  dependencies
-```
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
 ```
 
-### 🧨 How to Fine-Tuning Lumina-DiMOO
-#### Step 1: Pre-extract discrete codes of training images.
-The final format after specific processing can refer to the sample json file ``assets/mmu_sample.json`` and ``assets/t2i_sample.json``.
-```
-bash pre_tokenizer/run_pre_token.sh
-```
-#### Step 2: Train Lumina-DiMOO model.
-```
-bash train/train.sh
-```
+The main dependencies include Transformers 4.46.2 and Diffusers 0.34.0.
+Optional DDP 8-bit AdamW requires `bitsandbytes==0.45.5`.
 
-### 🚗 Text-to-Image Generation Inference
-#### 1. Normal Sampling
-```
-python inference/inference_t2i.py\
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "A striking photograph of a glass of orange juice on a wooden kitchen table, capturing a playful moment. The orange juice splashes out of the glass and forms the word \"Smile\" in a whimsical, swirling script just above the glass. The background is softly blurred, revealing a cozy, homely kitchen with warm lighting and a sense of comfort." \
-    --height 768 \
-    --width 1536 \
-    --timesteps 64 \
-    --cfg_scale 4.0 \
-    --seed 65513 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_text_to_image
-```
-#### 2. DDP Sampling
-To support large-scale sampling/testing, we provide additional ddp sampling scripts that support multi-GPU parallel sampling.
-```
-torchrun --nproc_per_node=8 inference/inference_t2i_ddp.py \
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt_path /path/to/prompts.jsonl \
-    --height 1024 \
-    --width 1024 \
-    --timesteps 64 \
-    --cfg_scale 4.0 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_image_to_image_ddp \
-    --output_json output/results_image_to_image_ddp/results.json
-```
-#### 3. Faster Sampling with Cache
-- Add `--use-cache` to accelerate sampling through max logit-based cache (ML-Cache). The efficiency-quality tradeoff can be tuned by `cache_ratio` (in `(0,1)`; the higher the faster), `warmup_ratio` (in `[0,1)`; the lower the faster), and `refresh_interval` (in `(1, timesteps-int(warmup_ratio*timesteps)-1]`; the higher the faster). 
-```
-python inference/inference_t2i.py\
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "A striking photograph of a glass of orange juice on a wooden kitchen table, capturing a playful moment. The orange juice splashes out of the glass and forms the word \"Smile\" in a whimsical, swirling script just above the glass. The background is softly blurred, revealing a cozy, homely kitchen with warm lighting and a sense of comfort." \
-    --height 768 \
-    --width 1536 \
-    --timesteps 64 \
-    --cfg_scale 4.0 \
-    --seed 65513 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_text_to_image_usecache \
-    --use-cache \
-    --cache_ratio 0.9 \
-    --warmup_ratio 0.3 \
-    --refresh_interval 5
-```
+## Model Preparation
 
-- We provide the inference time and GPU memory on one A800 as a reference:
-
-| Method               | Inference Time | Inference GPU Memory |
-|----------------------|--------|----------|
-| Lumina-DiMOO      | 58.2s     | 38.9 GB  |
-| + ML-Cache        | 32.2s     | 45.9 GB  |
-
-### 🌟 Image-to-Image Inference
- 
-#### 1. Controllable Generation: "hed_control", "depth_control", "openpose_control", "subject_driven".
-
-```
-python inference/inference_i2i.py \
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "A functional wooden printer stand.Nestled next to a brick wall in a bustling city street, it stands firm as pedestrians hustle by, illuminated by the warm glow of vintage street lamps." \
-    --image_path examples/example_2.jpg \
-    --edit_type depth_control \
-    --timesteps 64 \
-    --cfg_scale 2.5 \
-    --cfg_img 4.0 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_image_to_image
-```
-
-#### 2. Subject-Driven Generation.
-```
-python inference/inference_i2i.py \
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "A creamy, rich-flavored dark beverage.Captured in a bustling urban street at twilight, this item is placed on an outdoor café table, as city lights begin to twinkle and passersby create a lively atmosphere." \
-    --image_path examples/example_3.jpg \
-    --edit_type subject_driven \
-    --timesteps 64 \
-    --cfg_scale 2.5 \
-    --cfg_img 4.0 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_image_to_image
-```
-
-#### 3. Image Editing: "edit_add", "edit_remove", "edit_replace", "edit_background", "edit_text_transfer".
-```
-python inference/inference_i2i.py \
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "Add a beige shed with brown trim and double doors with a diamond pattern in the center-right, occupying more than a third of the image." \
-    --image_path examples/example_4.png \
-    --edit_type edit_add \
-    --timesteps 64 \
-    --cfg_scale 2.5 \
-    --cfg_img 4.0 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_image_to_image
-```
-
-#### 4. Style Transfer (An Image as Style Reference)
-```
-python inference/inference_i2i.py \
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "Transform the current image into the style of the provided image." \
-    --image_path examples/example_5.png \
-    --ref_image_path examples/example_5_style.png \
-    --edit_type image_ref_transfer \
-    --timesteps 64 \
-    --cfg_scale 2.5 \
-    --cfg_img 4.0 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_image_to_image
-```
-
-#### 5. Dense Prediction: "canny_pred", "hed_pred", "depth_pred", "openpose_pred", "canny_control".
-```
-python inference/inference_i2i.py \
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "Generate a canny edge map accroding to the image." \
-    --image_path examples/example_1.png \
-    --edit_type canny_pred \
-    --timesteps 64 \
-    --cfg_scale 2.5 \
-    --cfg_img 4.0 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_image_to_image
-```
-
-### 🏃 Image Inpainting & Extrapolation Inference
-
-#### 1. Image Inpainting
-```
-python inference/inference_t2i.py\
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "Porsche showroom. Make there be a Porsche logo on the back wall behind the car." \
-    --painting_mode inpainting \
-    --painting_image examples/example_8.png \
-    --mask_h_ratio 0.5 \
-    --mask_w_ratio 0.5 \
-    --timesteps 64 \
-    --cfg_scale 4.0 \
-    --seed 65513 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_text_to_image
-```
-
-#### 2. Image Extrapolation
-```
-python inference/inference_t2i.py\
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "A photograph showcasing a pale gold moon, partially veiled by wispy cirrus clouds, dominating a dramatic twilight sky. The moon's soft glow reflects on the tranquil surface of a lake below, creating a shimmering mirror effect, while a small wooden rowboat gently bobs on the water's edge. Dark silhouettes of tall, ancient pine trees encircle the lake, their branches reaching towards the sky like skeletal fingers, as a gentle mist hangs low, diffusing the moonlight and adding a sense of serene mystery. The scene is bathed in soft, cool lighting, creating an ethereal and captivating atmosphere." \
-    --painting_mode outpainting \
-    --painting_image examples/example_7.png \
-    --mask_h_ratio 1 \
-    --mask_w_ratio 0.2 \
-    --timesteps 64 \
-    --cfg_scale 4.0 \
-    --seed 65513 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/results_text_to_image
-```
-
-
-### ⚡️ Image Understanding Inference
-```
-python inference/inference_mmu.py \
-    --checkpoint Alpha-VLLM/Lumina-DiMOO \
-    --prompt "Please describe this image." \
-    --image_path examples/example_6.jpg \
-    --steps 128 \
-    --gen_length 128 \
-    --block_length 32 \
-    --vae_ckpt Alpha-VLLM/Lumina-DiMOO \
-    --output_dir output/outputs_text_understanding
-```
-
-## 🏆 Benchmark Evaluation
-
-We utilize the [VLMEvalKit](https://github.com/open-compass/VLMEvalKit) from OpenCompass to evaluate **Lumina_DiMOO** across multiple benchmarks.
-
-### 1. Preparation
-Navigate to the `VLMEvalKit` directory and install the required dependencies:
+Download [Lumina-DiMOO](https://huggingface.co/Alpha-VLLM/Lumina-DiMOO), including
+its tokenizer and `vqvae/`, or reuse an existing local copy:
 
 ```bash
-cd VLMEvalKit
-pip install -r requirements.txt
+huggingface-cli download Alpha-VLLM/Lumina-DiMOO --local-dir checkpoints/Lumina-DiMOO
 ```
- **⚠️ Important Note:** We utilize an LLM as the judge model for answer matching. Before running the evaluation, you need edit the `VLMEvalKit/.env` file to fill in your `OPENAI_API_KEY` and `OPENAI_API_BASE`.
-### 2. Supported Benchmarks
-We support evaluation on the following 5 benchmarks. Please use the corresponding **Data Name** in the command arguments:
 
-| Benchmark | Data Name (`--data`) |
-| :--- | :--- |
-| **POPE** | `POPE` |
-| **MME** | `MME` |
-| **MMBench** | `MMBench_DEV_EN` |
-| **SEEDBench** | `SEEDBench_IMG` |
-| **MMMU** | `MMMU_DEV_VAL` |
+Set `base_checkpoint` to this directory. Set `vq_checkpoint` to the same directory
+or to a separate VQ-VAE directory. Model loading uses local files. Keep the same
+VQ-VAE for SFT, Teacher initialization, distillation and inference.
 
-### 3. Run Evaluation
-You can perform the evaluation using either a single GPU or multiple GPUs.
+## Data Preparation
 
-**Single GPU Evaluation:**
+Use JSONL manifests containing aligned source/target images, binary edit masks
+and English instructions. White mask pixels indicate the edit region. Paths are
+relative to `asset_roots[dataset_name]`, or may be absolute.
+
+```json
+{"sample_uid":"pair-1","dataset_name":"interedit","group_id":"source-1","source":"source.png","target":"target.png","mask":"mask.png","instruction_en":"Make the jacket blue"}
+```
+
+Prepare separate train and validation manifests without shared source groups.
+Remove invalid images and empty masks before training. Source, target and mask
+are resized together; masks use nearest-neighbor resizing. Existing file-backed
+locator manifests are also supported.
+
+For optional raw dataset export, use a local
+[LiveMGT checkout](https://github.com/Shi-qingyu/EditMGT) with its dataset
+loading dependencies:
+
 ```bash
-python3 run.py --data MMMU_DEV_VAL --model Lumina_DiMOO --verbose
+python -m livemgt_training.full.export_livemgt_data \
+  --upstream-root EditMGT --data-root datasets/raw/interedit --source interedit \
+  --cache-dir .cache/interedit --output datasets/interedit --max-samples 50000
 ```
 
-**Multi-GPU Evaluation (8 GPUs):**
+Use `--translations-dir` to apply existing Inter-Edit English translations.
+Export defaults to 512 resolution, excludes Inter-Edit text editing and traverses
+each source once. MagicBrush uses its original mask decoder. Exported paths are
+relative to the output directory unless `--manifest-root` specifies another root.
+
+Copy the training templates and configure the model, manifests and asset roots:
+
 ```bash
-torchrun --nproc-per-node=8 --master_port=29500 run.py \
-    --data MMMU_DEV_VAL \
-    --model Lumina_DiMOO \
-    --verbose
+cp configs/formal/sft.json config.local.sft.json
+cp configs/formal/dimo.json config.local.dimo.json
 ```
 
-## 📜 Acknowledgements
-This work was also supported and implemented by [MindSpeed MM](https://gitee.com/ascend/MindSpeed-MM), an open-source training framework for large-scale multimodal models designed for distributed training, developed and maintained by Huawei's Computing Product Line. Specifically Optimized for Huawei‘s Ascend AI chips, MindSpeed MM offers comprehensive support for distributed training and is tailored for a wide range of multimodal tasks.
+Set these fields in both files, retaining the remaining template settings:
 
-## 📖 BibTeX
-```
-@article{xin2025lumina,
-  title={Lumina-DiMOO: An Omni Diffusion Large Language Model for Multi-Modal Generation and Understanding},
-  author={Xin, Yi and Qin, Qi and Luo, Siqi and Zhu, Kaiwen and Yan, Juncheng and Tai, Yan and Lei, Jiayi and Cao, Yuewen and Wang, Keqi and Wang, Yibin and others},
-  journal={arXiv preprint arXiv:2510.06308},
-  year={2025}
-}
-
-@article{xin2025dmllm,
-  title={dMLLM-TTS: Self-Verified and Efficient Test-Time Scaling for Diffusion Multi-Modal Large Language Models},
-  author={Xin, Yi and Luo, Siqi and Qin, Qi and Chen, Haoxing and Zhu, Kaiwen and Zhang, Zhiwei and He, Yangfan and Zhang, Rongchao and Bai, Jinbin and Cao, Shuo and others},
-  journal={arXiv preprint arXiv:2512.19433},
-  year={2025}
+```json
+{
+  "base_checkpoint": "checkpoints/Lumina-DiMOO",
+  "vq_checkpoint": "checkpoints/Lumina-DiMOO",
+  "train_manifest": "datasets/train.jsonl",
+  "validation_manifest": "datasets/validation.jsonl",
+  "asset_roots": {
+    "interedit": "datasets/interedit",
+    "magicbrush": "datasets/magicbrush",
+    "maskedit": "datasets/maskedit"
+  }
 }
 ```
 
+`data_mode=manifest` shuffles all training rows. For source-weighted sampling, use
+`configs/formal/livemgt_mixture.json` as the template: Inter-Edit 90%, MagicBrush
+5%, MaskEdit 5%. Each rank owns a disjoint shard and each source advances its own
+shuffle epoch. Treat assets as immutable; update dataset provenance or
+`data_versions` when replacing them.
 
+## Training
 
+### SFT
+
+```bash
+TRAIN_CONFIG=config.local.sft.json bash scripts/train.sh --output runs/sft --export student
+```
+
+### Region-DiMO
+
+In `config.local.dimo.json`, set `teacher_checkpoint` to
+`runs/sft/student-export-20000` and `teacher_status` to `FORMAL_SFT_TRAINED`.
+The Teacher must have SFT provenance recording the same VQ-VAE identity.
+
+```bash
+TRAIN_CONFIG=config.local.dimo.json bash scripts/dimo/train.sh --output runs/dimo --export ema
+```
+
+Training defaults to full fine-tuning, DDP, FP32 with TF32 disabled, and 512×512
+images. SFT uses 20000 updates; Region-DiMO uses 6000 Student updates. The
+microbatch is 1 with gradient accumulation 8. AdamW uses LR 1e-6, betas
+(0.9, 0.999), epsilon 1e-8, weight decay 0.01, 100 warmup updates and a constant
+schedule afterward. Gradient clipping is 1.0, gradient checkpointing is enabled,
+and CPU EMA uses decay 0.9999 with warmup.
+
+The VQ-VAE and Teacher are frozen. Student and Auxiliary have independent full
+parameters, optimizers and schedulers. Region conditioning and Type RoPE C are
+enabled; ordinary type embeddings are disabled. Halo 1 expands the original mask
+M by one VQ cell in all eight directions to form R. SFT supervises corrupted
+positions in R; GT CE uses M with weight 0.1. CBC distillation and Auxiliary CE
+use the sampled pseudo-mask Q within R. Source tokens outside R stay fixed.
+
+### GPUs and distributed backends
+
+By default, the launchers use one process per visible GPU. For example:
+
+```bash
+CUDA_VISIBLE_DEVICES=0,1 NUM_PROCESSES=2 TRAIN_CONFIG=config.local.sft.json \
+  bash scripts/train.sh --output runs/sft-fsdp --set backend=fsdp
+```
+
+`GPU_IDS` overrides `CUDA_VISIBLE_DEVICES`. Backends are `ddp`, `ddp_zero` and
+`fsdp` (FULL_SHARD); optimizers are configured independently as `adamw` or
+`adamw8bit`. The 8-bit optimizer supports DDP only. Backends and precision never
+change automatically. Multi-node launch uses `NNODES`, `NODE_RANK`, `MASTER_ADDR`
+and `MASTER_PORT`; existing torchrun workers use their rank environment directly.
+
+Global batch size is world size × microbatch × accumulation. Set
+`global_batch_size` to fix it; it must be divisible by world size × microbatch.
+Learning rate is not scaled automatically. To select BF16 compute and validation
+explicitly, set `mixed_precision=bf16` and `inference_dtype=bfloat16`.
+
+### Checkpoints and resume
+
+```bash
+TRAIN_CONFIG=config.local.sft.json bash scripts/train.sh --output runs/sft \
+  --resume runs/sft/checkpoint-500
+```
+
+Complete checkpoints contain model, optimizer, scheduler, EMA, RNG and data-stream
+state. The latest two checkpoints, configured milestones and the latest final
+checkpoint are retained. Checkpoints are saved every 500 updates and at training
+completion; fixed validation examples are saved every 200 updates. When moving a
+DiMO run, copy its shared `teacher/` directory together with the checkpoint.
+
+Resume checks model/data identities and training settings. World-size changes
+require `--allow-world-size-change` and reset per-source counts on new rank shards;
+they do not reproduce the previous sample order. Batch or backend changes require
+`--allow-batch-size-change` or `--allow-backend-change`, respectively. Checkpoints
+without the required identities or sampler state can initialize model weights
+through an inference export instead of a full-state resume.
+
+Interrupted saves can leave hidden `.checkpoint-*.tmp-*`,
+`.checkpoint-*.interrupted-*` or corresponding `.teacher.*` directories. After all
+workers using that run directory have stopped, inspect and manually remove only
+confirmed abandoned directories. Active staging directories are never removed
+automatically; keep complete checkpoints and the shared `teacher/` directory.
+
+## Inference
+
+SFT editing uses the original 18-step MaskGit sampler with Text CFG 2.5 and Image
+CFG 4:
+
+```bash
+bash scripts/infer.sh --checkpoint runs/sft/student-export-20000 \
+  --vq-vae checkpoints/Lumina-DiMOO --source source.png --mask mask.png \
+  --instruction 'Make the jacket blue' --phase sft --steps 18 \
+  --text-cfg 2.5 --image-cfg 4 --cache on --output outputs/sft.png
+```
+
+Region-DiMO uses one conditional-only step with no additional CFG:
+
+```bash
+bash scripts/infer.sh --checkpoint runs/dimo/ema-export-6000 \
+  --vq-vae checkpoints/Lumina-DiMOO --source source.png --mask mask.png \
+  --instruction 'Make the jacket blue' --phase dimo --cache on --output outputs/dimo.png
+```
+
+Use `--cache off` to disable Condition KV Cache. Defaults are resolution 512,
+halo 1 and seed 42; override them with `--resolution`, `--halo` and `--seed`.
+Omitting `--mask` edits the full image. `--precision float32|bfloat16` overrides
+`inference_dtype` from an optional `--config` file or the model export.
+
+Load Student or EMA by selecting the corresponding exported directory. To export
+either role from a complete checkpoint, use `--role student` or `--role ema`:
+
+```bash
+python -m livemgt_training.full.checkpoint --checkpoint runs/dimo/checkpoint-6000 \
+  --role student --output weights/dimo-student
+```
+
+Exports default to FP32 and contain inference weights and tokenizer files rather
+than optimizer or RNG state. The editor saves the result, source/mask comparison
+and inference settings beside `--output`.
+
+## Acknowledgements & License
+
+This work builds on [Lumina-DiMOO](https://github.com/Alpha-VLLM/Lumina-DiMOO)
+by Alpha-VLLM and [EditMGT / LiveMGT](https://github.com/Shi-qingyu/EditMGT)
+by Shi-qingyu and collaborators. Preserve their attribution when redistributing
+adaptations. See [LICENSE](LICENSE),
+[the upstream EditMGT license](licenses/EditMGT-LICENSE) and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Model weights and datasets retain
+their respective licenses.

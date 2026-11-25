@@ -1,0 +1,92 @@
+{
+  "base_checkpoint": null,
+  "teacher_adapter": null,
+  "teacher_status": "NOT_FORMALLY_SFT_TRAINED",
+  "train_manifest": null,
+  "validation_manifest": null,
+  "resolution": 512,
+  "p3": {
+    "region": true,
+    "token_type": false
+  },
+  "lora_rank": 4,
+  "lora_alpha": 8,
+  "lora_targets": [
+    "q_proj",
+    "v_proj"
+  ],
+  "freeze_embedding": true,
+  "freeze_head": true,
+  "regional": true,
+  "distillation_halo": 1,
+  "student_initial_mask_ratio": 1.0,
+  "teacher_text_cfg": 2.5,
+  "teacher_image_cfg": 4.0,
+  "evidence_mode": "text",
+  "cbc": {
+    "enabled": true,
+    "core_weight": 1.0,
+    "boundary_weight": 2.0,
+    "evidence_weight": 0.5,
+    "boundary_sigma": 1.0,
+    "core_margin": 1.0,
+    "weighted_pseudo_mask": true,
+    "evidence_chunk_size": 1024
+  },
+  "student_lr": 1e-05,
+  "auxiliary_lr": 1e-05,
+  "sft_lr": 0.0001,
+  "weight_decay": 0.01,
+  "warmup_steps": 0,
+  "max_grad_norm": 1.0,
+  "fake_rounds": 1,
+  "auxiliary_label_smoothing": 0.1,
+  "ema_decay": 0.9999,
+  "ema_warmup": true,
+  "gradient_checkpointing": true,
+  "gt_ce": {
+    "enabled": false,
+    "weight": 0.1
+  },
+  "gan": {
+    "enabled": false,
+    "weight": 0.01,
+    "warmup": 200,
+    "discriminator": "UNVALIDATED_EXTERNAL_IMAGE_CRITIC",
+    "status": "interface_only"
+  },
+  "cfg_dropout": {
+    "text": 0.1,
+    "image": 0.1
+  },
+  "validation_every": 100,
+  "save_every": 100,
+  "seed": 42,
+  "planning": {
+    "sft_initial_budget_updates": 20000,
+    "dimo_initial_budget_updates": 6000
+  },
+  "variant": "type_rope_C",
+  "freeze_adapter_prefixes": {
+    "student": [],
+    "auxiliary": []
+  },
+  "official_dev_manifest": null,
+  "prior_dataset_audit": null,
+  "region_conditioning": true,
+  "token_type_embedding": false,
+  "token_type_rope": true,
+  "rope_mode": "pretrained_type_phase",
+  "type_rope": {
+    "enabled": true,
+    "mode": "pretrained_type_phase",
+    "theta": 10000.0,
+    "mapping_version": "lumina_roles_v1"
+  },
+  "notes": "All groups keep region conditioning; E replaces pretrained pairing/frequencies and requires adaptation; no quality claim",
+  "asset_roots": {},
+  "mixed_precision": "no",
+  "inference_dtype": "float32",
+  "full_export_dtype": "float32",
+  "tf32": false
+}
